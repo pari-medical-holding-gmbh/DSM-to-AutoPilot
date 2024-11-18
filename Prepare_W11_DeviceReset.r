@@ -54,6 +54,7 @@ Set('_RV_OD','0')
 Set('_RV_reg','0')
 Set('_RV_WinFeatures','1')
 Set('_RV_msgbox','not_set')
+Set('_SataMode','unknown')
 Set('_DLVersion','99999')
 Set('_VersionTM','99999')
 Set('_Ping','false')
@@ -253,12 +254,14 @@ If not CheckInstallMode(imUninstall)
   If RegValueExistsEx('HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\NetSupport\NetInstall\InplaceUpgrades','ResetTried',)
    RegModify('HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\NetSupport\NetInstall\InplaceUpgrades','ResetTried','0',mrReplace)/TS
 !  
-  RegModifyDWord('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\storahci','Start','0',mrdwSet+reUseX64Hive)/TS
-  ExecuteEx('"C:\Program Files (x86)\Dell\Command Configure\X86_64\cctk.exe" --SecureBoot=Enabled --TpmActivation=Enabled --TpmSecurity=Enabled --EmbSataRaid=Ahci --ValSetupPwd=YourBIOSPassword','_RV_CCTK','7')/?/X/TS
-!  RegModify('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce','*DisableSafeMode','powershell.exe -ExecutionPolicy Bypass -Command \"C:\Windows\System32\bcdedit.exe /deletevalue {current} safeboot; Restart-Computer -Force\"',mrReplace)/TS
-  RunAsEx('%comspec%','/c reg import ".\Extern$\DisableSafeBoot.reg"','paricorp.net\dsmsis','k2295157FDF13D771CA5577EF5E847F3388G0A','1','_RV_REG',raUseLocalSystem+WaitForExecution+raLogonWithProfile+UndoneContinueParentScript)/X/x64/TS
-!  ExecuteEx('"C:\Windows\System32\bcdedit.exe" /set {current} safeboot minimal','','5')/?/X/TW
-  RunAsEx('C:\Windows\System32\bcdedit.exe','/set {current} safeboot minimal','paricorp.net\dsmsis','k2295157FDF13D771CA5577EF5E847F3388G0A','2','_RV_BCD',raUseLocalSystem+WaitForExecution+raLogonWithProfile+UndoneContinueParentScript)/X/x64/TS
+  CallScript('.\Extern$\Check-SATA-BIOS-Mode.ps1','')/X/x64/TS
+  If %_SataMode%='Raid' or %_SataMode%='Ata' or %_SataMode%='unknown'
+   RegModifyDWord('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\storahci','Start','0',mrdwSet+reUseX64Hive)/TS
+!   RegModify('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce','*DisableSafeMode','powershell.exe -ExecutionPolicy Bypass -Command \"C:\Windows\System32\bcdedit.exe /deletevalue {current} safeboot; Restart-Computer -Force\"',mrReplace)/TS
+   RunAsEx('%comspec%','/c reg import ".\Extern$\DisableSafeBoot.reg"','paricorp.net\dsmsis','k2295157FDF13D771CA5577EF5E847F3388G0A','1','_RV_REG',raUseLocalSystem+WaitForExecution+raLogonWithProfile+UndoneContinueParentScript)/X/x64/TS
+!   ExecuteEx('"C:\Windows\System32\bcdedit.exe" /set {current} safeboot minimal','','5')/?/X/TW
+   RunAsEx('C:\Windows\System32\bcdedit.exe','/set {current} safeboot minimal','paricorp.net\dsmsis','k2295157FDF13D771CA5577EF5E847F3388G0A','2','_RV_BCD',raUseLocalSystem+WaitForExecution+raLogonWithProfile+UndoneContinueParentScript)/X/x64/TS
+  ExecuteEx('"C:\Program Files (x86)\Dell\Command Configure\X86_64\cctk.exe" --SecureBoot=Enabled --TpmActivation=Enabled --TpmSecurity=Enabled --EmbSataRaid=Ahci --ValSetupPwd=bi0Spw','_RV_CCTK','7')/?/X/TS
 !  #Trigger Reboot
   RegModifyDWord('HKEY_LOCAL_MACHINE\SOFTWARE\Pari\Reboot','RebootFlag','2',mrdwSet+reUseX64Hive)/TS
   If %_InstallationPostponements%<='0'
