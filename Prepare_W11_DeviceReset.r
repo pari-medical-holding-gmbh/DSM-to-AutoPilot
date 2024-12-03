@@ -3,7 +3,7 @@
 !Datum: 26.07.2024
 !---------------------------------------------------------------------------------------------------------------------------
 !Beschreibung:
-!Dieses Paket informiert den Anwender über ein Upgarde auf Windows 11 und setzt in der Registry einen Hilfskey
+!This package informs the user about an upgrade to Windows 11 and sets a helper key in the registry
 !---------------------------------------------------------------------------------------------------------------------------
 !Änderungen:
 !26.07.2024 rev V001: FaserF: Paket erstellt
@@ -62,11 +62,14 @@ Set('_powerStatus','true')
 Set('_batteryLevel','100')
 Set('_InstallationPostponements','%_InstallationPostponementsInitial%')
 If RegValueExistsEx('HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\NetSupport\NetInstall\InplaceUpgrades','InstallationPostponements',)
- RegReadValueEx('HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\NetSupport\NetInstall\InplaceUpgrades','InstallationPostponements','_InstallationPostponements',)
- DecrementVar('_InstallationPostponements','1')
+ RegReadValueEx('HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\NetSupport\NetInstall\InplaceUpgrades','InstallationPostponements','_InstallationPostponementsRegistry',)
+ If %_InstallationPostponementsRegistry%<'%_InstallationPostponements%'
+  Set('_InstallationPostponements','%_InstallationPostponementsRegistry%')
+  DecrementVar('_InstallationPostponements','1')
 Set('_ReturnMessage','')
 Set('_TargetVersion','22000')
 !#19041=2004; 19042=20H2; 19043 = Win10 21H1
+!#-> Hier steht mit Absicht 19041, da bei 2004 das Inplace Upgrade Paket auf 20H2 nicht funktioniert (siehe "(OS) Windows 11 21H1 enabling package for 2004" Paket)
 Set('_NewBuildNumber','22000')
 RegReadValueEx('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion','CurrentBuildNumber','_BuildNumber',)
 Set('_Language','%CurrentComputer.CustomClientProperties.TargetLanguage1%')
@@ -80,7 +83,7 @@ Set('_MessageRestart','Preparation done - Restart required to start the reinstal
 Set('_MessageDeviceModel','Your device is not Windows 11 compatible. Please contact the IT-Support soon, to replace your device. ')
 Set('_chkdsk_command','echo y | chkdsk C: /F /R')
 If %_Language%='de-DE' or %_Language%='de-CH'
- Set('_Message','WICHTIG: Dein System muss auf Client 2.0 mit Windows 11 neuinstalliert werden. Dies kann bis zu 3 Stunden in Anspruch nehmen. Während der Neuinstallation wird dein Gerät mehrmals neustarten. Neuinstallation jetzt/beim nächsten Neustart starten? Verfügbare Aufschübe: %_InstallationPostponements%')
+ Set('_Message','WICHTIG: Dein System muss auf Client 2.0 mit Windows 11 neuinstalliert werden. Dies kann bis zu 3 Stunden dauern und sollte bevorzugt an einem Firmenstandort durchgeführt werden. Während der Neuinstallation wird dein Gerät mehrmals neustarten. Neuinstallation jetzt/beim nächsten Neustart starten? Verfügbare Aufschübe: %_InstallationPostponements%')
  Set('_Message_Alternative','WICHTIG: Dein System muss auf Client 2.0 mit Windows 11 neuinstalliert werden. Dies kann bis zu 3 Stunden in Anspruch nehmen. Während der Neuinstallation wird dein Gerät mehrmals neustarten. Neuinstallation jetzt/beim nächsten Neustart starten? Verfügbare Aufschübe: %_InstallationPostponements%')
  Set('_Message_2','Die Windows 11 Neuinstallation wird gestartet, da die maximalen Aufschübe aufgebraucht wurden. Dies kann bis zu drei Stunden dauern und alle Daten werden gelöscht!')
  Set('_Message3','WICHTIG: Bitte stelle sicher, dass deine wichtige Dateien in OneDrive/ einem Netzlaufwerk vor dem Upgrade gesichert sind.')
